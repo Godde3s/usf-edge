@@ -1,5 +1,4 @@
 node_modules/
-dist/
 .wrangler/
 src/html/admin-raw.html
 src/html/user-page.html
@@ -8,5 +7,7 @@ src/proxy.ts
 convert-html.js
 public/
 *.log
+*.map
 .env
 .dev.vars
+!.gitkeep
