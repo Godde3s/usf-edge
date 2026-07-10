@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Usf-Edge — Next-Generation Edge Proxy Management Panel</title>
+<meta name="description" content="Deploy a powerful proxy management panel on Cloudflare Workers in one click. Multi-user management, traffic accounting, beautiful subscription pages, and stealth mode.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg-deep:#0a0e1a;--bg-mid:#111827;--bg-card:rgba(17,24,39,0.7);
+  --bg-card-solid:#111827;--border:rgba(6,182,212,0.12);--border-hover:rgba(6,182,212,0.3);
+  --cyan:#06b6d4;--cyan-light:#22d3ee;--cyan-dim:rgba(6,182,212,0.15);
+  --purple:#8b5cf6;--purple-light:#a78bfa;
+  --text:#e2e8f0;--text-secondary:#94a3b8;--text-muted:#64748b;
+  --success:#10b981;--error:#ef4444;--warning:#f59e0b;
+  --radius:12px;--radius-lg:16px;--radius-xl:20px;
+  --font:'Inter',system-ui,-apple-system,sans-serif;
+  --shadow:0 4px 24px rgba(0,0,0,0.3);--shadow-lg:0 8px 48px rgba(0,0,0,0.4);
+  --shadow-glow:0 0 40px rgba(6,182,212,0.08);
+  --transition:all 0.3s cubic-bezier(0.4,0,0.2,1);
+}
+html{scroll-behavior:smooth;font-size:16px}
+body{
+  font-family:var(--font);background:var(--bg-deep);color:var(--text);
+  line-height:1.6;overflow-x:hidden;-webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+}
+/* ── Background ── */
+body::before{
+  content:'';position:fixed;inset:0;z-index:-1;
+  background:linear-gradient(160deg,#0a0e1a 0%,#12132a 40%,#1a1a2e 100%);
+}
+body::after{
+  content:'';position:fixed;inset:0;z-index:-1;
+  background:radial-gradient(ellipse 80% 60% at 50% -10%,rgba(6,182,212,0.06),transparent 60%),
+             radial-gradient(ellipse 60% 50% at 80% 100%,rgba(139,92,246,0.04),transparent 60%);
+  pointer-events:none;
+}
+/* ── Grid overlay ── */
+.grid-bg{
+  position:fixed;inset:0;z-index:-1;pointer-events:none;
+  background-image:
+    linear-gradient(rgba(6,182,212,0.03) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(6,182,212,0.03) 1px,transparent 1px);
+  background-size:60px 60px;
+  mask-image:radial-gradient(ellipse 70% 50% at 50% 30%,black,transparent);
+}
+/* ── Utility ── */
+.container{max-width:1140px;margin:0 auto;padding:0 24px}
+a{color:var(--cyan);text-decoration:none;transition:var(--transition)}
+a:hover{color:var(--cyan-light)}
+/* ── Navbar ── */
+.navbar{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  padding:16px 0;
+  background:rgba(10,14,26,0.75);
+  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+  transition:var(--transition);
+}
+.navbar.scrolled{padding:10px 0;background:rgba(10,14,26,0.92)}
+.navbar .container{display:flex;align-items:center;justify-content:space-between}
+.nav-logo{
+  font-size:1.35rem;font-weight:800;letter-spacing:-0.02em;
+  background:linear-gradient(135deg,var(--cyan),var(--purple-light));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;
+}
+.nav-links{display:flex;gap:32px;align-items:center}
+.nav-links a{color:var(--text-secondary);font-size:0.9rem;font-weight:500;position:relative}
+.nav-links a:hover{color:var(--text)}
+.nav-links a::after{
+  content:'';position:absolute;bottom:-4px;left:0;width:0;height:2px;
+  background:var(--cyan);transition:width 0.3s ease;
+}
+.nav-links a:hover::after{width:100%}
+.nav-gh{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:8px 18px;border-radius:8px;font-size:0.85rem;font-weight:600;
+  background:var(--cyan-dim);color:var(--cyan)!important;border:1px solid var(--border);
+  transition:var(--transition);
+}
+.nav-gh:hover{background:rgba(6,182,212,0.25);border-color:var(--border-hover);color:var(--cyan-light)!important}
+.nav-gh::after{display:none!important}
+.mobile-toggle{display:none;background:none;border:none;color:var(--text);cursor:pointer;padding:4px}
+.mobile-toggle svg{width:24px;height:24px}
+/* ── Hero ── */
+.hero{
+  min-height:100vh;display:flex;align-items:center;justify-content:center;
+  text-align:center;padding:120px 24px 80px;position:relative;
+}
+.hero-content{max-width:720px}
+.hero-badge{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:6px 16px;border-radius:100px;font-size:0.8rem;font-weight:600;
+  background:var(--cyan-dim);color:var(--cyan);border:1px solid var(--border);
+  margin-bottom:28px;letter-spacing:0.02em;
+}
+.hero-badge .dot{width:6px;height:6px;border-radius:50%;background:var(--cyan);animation:pulse-dot 2s infinite}
+@keyframes pulse-dot{0%,100%{opacity:1}50%{opacity:0.3}}
+.hero h1{
+  font-size:clamp(2.8rem,7vw,4.5rem);font-weight:900;line-height:1.08;
+  letter-spacing:-0.03em;margin-bottom:20px;
+  background:linear-gradient(135deg,var(--cyan-light) 0%,var(--cyan) 30%,var(--purple) 70%,var(--purple-light) 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;
+}
+.hero .tagline{
+  font-size:clamp(1.05rem,2.2vw,1.3rem);color:var(--text-secondary);
+  font-weight:400;margin-bottom:16px;letter-spacing:0.01em;
+}
+.hero .description{
+  font-size:0.95rem;color:var(--text-muted);max-width:560px;margin:0 auto 40px;line-height:1.75;
+}
+.hero-buttons{display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
+.btn{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:13px 28px;border-radius:10px;font-size:0.92rem;font-weight:600;
+  cursor:pointer;border:none;transition:var(--transition);font-family:var(--font);
+  letter-spacing:0.01em;position:relative;overflow:hidden;
+}
+.btn-primary{
+  background:linear-gradient(135deg,var(--cyan),#0891b2);color:#fff;
+  box-shadow:0 4px 20px rgba(6,182,212,0.3);
+}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 6px 28px rgba(6,182,212,0.45)}
+.btn-secondary{
+  background:rgba(255,255,255,0.04);color:var(--text);
+  border:1px solid rgba(255,255,255,0.1);
+}
+.btn-secondary:hover{background:rgba(255,255,255,0.08);border-color:rgba(255,255,255,0.18);transform:translateY(-2px)}
+.btn svg{width:18px;height:18px;flex-shrink:0}
+/* ── Section shared ── */
+section{padding:100px 0}
+.section-label{
+  display:inline-flex;align-items:center;gap:8px;
+  font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;
+  color:var(--cyan);margin-bottom:12px;
+}
+.section-label svg{width:16px;height:16px}
+.section-title{
+  font-size:clamp(1.8rem,4vw,2.6rem);font-weight:800;letter-spacing:-0.02em;
+  margin-bottom:16px;color:var(--text);line-height:1.15;
+}
+.section-subtitle{font-size:1rem;color:var(--text-secondary);max-width:520px;line-height:1.7}
+.text-center{text-align:center}
+.text-center .section-subtitle{margin:0 auto}
+/* ── Features ── */
+.features-grid{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+  gap:20px;margin-top:52px;
+}
+.feature-card{
+  background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);
+  padding:32px 28px;transition:var(--transition);position:relative;overflow:hidden;
+  backdrop-filter:blur(12px);
+}
+.feature-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(6,182,212,0.3),transparent);
+  opacity:0;transition:opacity 0.4s;
+}
+.feature-card:hover{border-color:var(--border-hover);transform:translateY(-4px);box-shadow:var(--shadow-glow)}
+.feature-card:hover::before{opacity:1}
+.feature-icon{
+  width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;
+  background:var(--cyan-dim);margin-bottom:20px;color:var(--cyan);
+}
+.feature-icon svg{width:24px;height:24px}
+.feature-card h3{font-size:1.1rem;font-weight:700;margin-bottom:10px;letter-spacing:-0.01em}
+.feature-card p{font-size:0.88rem;color:var(--text-secondary);line-height:1.7}
+/* ── Steps ── */
+.steps-container{max-width:760px;margin:52px auto 0}
+.step{
+  display:flex;gap:20px;padding:24px 0;position:relative;
+}
+.step:not(:last-child)::after{
+  content:'';position:absolute;left:23px;top:56px;bottom:0;width:2px;
+  background:linear-gradient(to bottom,var(--border),transparent);
+}
+.step-num{
+  width:48px;height:48px;border-radius:50%;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-size:0.95rem;font-weight:800;color:var(--cyan);
+  background:var(--cyan-dim);border:2px solid var(--border);
+  transition:var(--transition);
+}
+.step:hover .step-num{border-color:var(--cyan);box-shadow:0 0 20px rgba(6,182,212,0.2)}
+.step-body h3{font-size:1.05rem;font-weight:700;margin-bottom:8px;letter-spacing:-0.01em}
+.step-body p{font-size:0.9rem;color:var(--text-secondary);line-height:1.7}
+.step-body ul{list-style:none;margin-top:10px;display:flex;flex-direction:column;gap:6px}
+.step-body ul li{
+  font-size:0.85rem;color:var(--text-muted);padding-left:20px;position:relative;line-height:1.6;
+}
+.step-body ul li::before{
+  content:'';position:absolute;left:0;top:9px;width:6px;height:6px;
+  border-radius:50%;background:var(--cyan);opacity:0.6;
+}
+.step-body code{
+  display:inline-block;padding:2px 8px;border-radius:5px;font-size:0.82rem;
+  background:rgba(6,182,212,0.08);color:var(--cyan-light);border:1px solid var(--border);
+  font-family:'SF Mono',Consolas,'Liberation Mono',Menlo,monospace;
+}
+/* ── Deploy ── */
+#deploy{padding:100px 0 120px}
+.deploy-card{
+  max-width:600px;margin:48px auto 0;
+  background:var(--bg-card);border:1px solid var(--border);
+  border-radius:var(--radius-xl);padding:40px 36px;
+  backdrop-filter:blur(16px);position:relative;overflow:hidden;
+}
+.deploy-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,var(--cyan),transparent);
+}
+.deploy-card h3{
+  font-size:1.3rem;font-weight:800;margin-bottom:6px;letter-spacing:-0.01em;
+  display:flex;align-items:center;gap:10px;
+}
+.deploy-card h3 svg{color:var(--cyan);width:22px;height:22px}
+.deploy-card .deploy-subtitle{font-size:0.88rem;color:var(--text-muted);margin-bottom:32px}
+.form-group{margin-bottom:20px}
+.form-group label{
+  display:block;font-size:0.82rem;font-weight:600;color:var(--text-secondary);
+  margin-bottom:8px;letter-spacing:0.02em;
+}
+.input-wrap{position:relative;display:flex;align-items:center}
+.input-wrap input{
+  width:100%;padding:13px 16px;border-radius:10px;font-size:0.9rem;
+  font-family:var(--font);color:var(--text);
+  background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);
+  outline:none;transition:var(--transition);
+}
+.input-wrap input::placeholder{color:var(--text-muted)}
+.input-wrap input:focus{border-color:var(--cyan);box-shadow:0 0 0 3px rgba(6,182,212,0.1)}
+.input-wrap .toggle-vis{
+  position:absolute;right:12px;background:none;border:none;color:var(--text-muted);
+  cursor:pointer;padding:4px;transition:var(--transition);display:flex;align-items:center;
+}
+.input-wrap .toggle-vis:hover{color:var(--text-secondary)}
+.input-wrap .toggle-vis svg{width:18px;height:18px}
+.input-wrap.has-toggle input{padding-right:44px}
+.btn-deploy{
+  width:100%;padding:14px;border-radius:10px;font-size:0.95rem;font-weight:700;
+  cursor:pointer;border:none;font-family:var(--font);color:#fff;
+  background:linear-gradient(135deg,var(--cyan),#0891b2);
+  box-shadow:0 4px 20px rgba(6,182,212,0.25);transition:var(--transition);
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  margin-top:28px;letter-spacing:0.01em;
+}
+.btn-deploy:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 6px 28px rgba(6,182,212,0.4)}
+.btn-deploy:disabled{opacity:0.6;cursor:not-allowed}
+.btn-deploy svg{width:18px;height:18px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.spinner{animation:spin 0.8s linear infinite}
+/* ── Progress ── */
+.progress-area{margin-top:28px;display:none}
+.progress-area.active{display:block}
+.progress-step{
+  display:flex;align-items:center;gap:12px;padding:10px 0;font-size:0.85rem;
+  color:var(--text-muted);transition:var(--transition);
+}
+.progress-step.active{color:var(--text-secondary)}
+.progress-step.done{color:var(--success)}
+.progress-step.error{color:var(--error)}
+.progress-step .step-icon{
+  width:28px;height:28px;border-radius:50%;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  border:2px solid rgba(255,255,255,0.08);font-size:0.7rem;font-weight:700;
+  transition:var(--transition);
+}
+.progress-step.active .step-icon{border-color:var(--cyan);color:var(--cyan);background:var(--cyan-dim)}
+.progress-step.done .step-icon{border-color:var(--success);background:rgba(16,185,129,0.12);color:var(--success)}
+.progress-step.error .step-icon{border-color:var(--error);background:rgba(239,68,68,0.12);color:var(--error)}
+.progress-step .step-text{flex:1}
+.progress-step .step-err{font-size:0.78rem;color:var(--error);margin-top:4px;display:none}
+.progress-step.error .step-err{display:block}
+/* ── Success card ── */
+.success-card{
+  display:none;margin-top:28px;padding:32px;border-radius:var(--radius-lg);
+  background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.2);
+  text-align:center;animation:fadeUp 0.5s ease;
+}
+.success-card.active{display:block}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.success-icon{
+  width:64px;height:64px;border-radius:50%;margin:0 auto 20px;
+  display:flex;align-items:center;justify-content:center;
+  background:rgba(16,185,129,0.12);border:2px solid rgba(16,185,129,0.3);
+  animation:scaleIn 0.5s cubic-bezier(0.34,1.56,0.64,1);
+}
+@keyframes scaleIn{from{transform:scale(0);opacity:0}to{transform:scale(1);opacity:1}}
+.success-icon svg{width:32px;height:32px;color:var(--success)}
+.success-card h4{font-size:1.15rem;font-weight:700;margin-bottom:8px;color:var(--success)}
+.success-card p{font-size:0.85rem;color:var(--text-secondary);margin-bottom:20px}
+.success-details{
+  text-align:left;background:rgba(0,0,0,0.25);border-radius:10px;
+  padding:20px;margin-bottom:20px;
+}
+.success-row{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.04);
+}
+.success-row:last-child{border-bottom:none}
+.success-row .label{font-size:0.82rem;color:var(--text-muted);font-weight:500;white-space:nowrap}
+.success-row .value{
+  font-size:0.85rem;color:var(--text);font-family:'SF Mono',Consolas,monospace;
+  word-break:break-all;text-align:right;flex:1;
+}
+.success-row .value a{color:var(--cyan)}
+.copy-btn{
+  flex-shrink:0;padding:6px 12px;border-radius:6px;font-size:0.75rem;font-weight:600;
+  cursor:pointer;border:1px solid var(--border);background:var(--cyan-dim);
+  color:var(--cyan);transition:var(--transition);font-family:var(--font);
+}
+.copy-btn:hover{background:rgba(6,182,212,0.25);border-color:var(--border-hover)}
+.success-warning{
+  padding:12px 16px;border-radius:8px;font-size:0.82rem;font-weight:600;
+  background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);
+  color:var(--warning);margin-bottom:20px;display:flex;align-items:center;gap:8px;
+}
+.success-warning svg{width:18px;height:18px;flex-shrink:0}
+.btn-panel{
+  display:inline-flex;align-items:center;gap:8px;padding:12px 28px;border-radius:10px;
+  font-size:0.9rem;font-weight:700;cursor:pointer;border:none;font-family:var(--font);
+  color:#fff;background:linear-gradient(135deg,var(--success),#059669);
+  box-shadow:0 4px 20px rgba(16,185,129,0.3);transition:var(--transition);
+  text-decoration:none;
+}
+.btn-panel:hover{transform:translateY(-2px);box-shadow:0 6px 28px rgba(16,185,129,0.45)}
+.btn-panel svg{width:18px;height:18px}
+.error-card{
+  display:none;margin-top:28px;padding:24px;border-radius:var(--radius-lg);
+  background:rgba(239,68,68,0.06);border:1px solid rgba(239,68,68,0.2);
+  text-align:center;animation:fadeUp 0.4s ease;
+}
+.error-card.active{display:block}
+.error-card h4{font-size:1.05rem;font-weight:700;margin-bottom:8px;color:var(--error)}
+.error-card p{font-size:0.85rem;color:var(--text-secondary);margin-bottom:16px;word-break:break-word}
+.btn-retry{
+  display:inline-flex;align-items:center;gap:8px;padding:10px 24px;border-radius:8px;
+  font-size:0.88rem;font-weight:600;cursor:pointer;border:1px solid rgba(239,68,68,0.3);
+  background:rgba(239,68,68,0.08);color:var(--error);transition:var(--transition);
+  font-family:var(--font);
+}
+.btn-retry:hover{background:rgba(239,68,68,0.15)}
+/* ── Footer ── */
+.footer{
+  border-top:1px solid var(--border);padding:40px 0;text-align:center;
+}
+.footer p{font-size:0.84rem;color:var(--text-muted);margin-bottom:6px}
+.footer a{color:var(--text-secondary)}
+.footer a:hover{color:var(--cyan)}
+/* ── Mobile menu ── */
+.mobile-menu{
+  display:none;position:fixed;top:0;left:0;right:0;bottom:0;z-index:99;
+  background:rgba(10,14,26,0.96);backdrop-filter:blur(24px);
+  flex-direction:column;align-items:center;justify-content:center;gap:28px;
+}
+.mobile-menu.open{display:flex}
+.mobile-menu a{font-size:1.2rem;font-weight:600;color:var(--text-secondary)}
+.mobile-menu a:hover{color:var(--text)}
+.mobile-close{position:absolute;top:20px;right:24px;background:none;border:none;color:var(--text);cursor:pointer;padding:4px}
+.mobile-close svg{width:28px;height:28px}
+/* ── Responsive ── */
+@media(max-width:768px){
+  .nav-links{display:none}
+  .mobile-toggle{display:flex}
+  .hero h1{font-size:clamp(2.2rem,8vw,3rem)}
+  .hero .description{font-size:0.88rem}
+  .features-grid{grid-template-columns:1fr}
+  .deploy-card{padding:28px 22px}
+  .step{flex-direction:column;align-items:flex-start}
+  .step:not(:last-child)::after{display:none}
+  .success-row{flex-direction:column;align-items:flex-start;gap:6px}
+  .success-row .value{text-align:left}
+  section{padding:72px 0}
+  #deploy{padding:72px 0 80px}
+}
+@media(max-width:480px){
+  .hero-buttons{flex-direction:column;align-items:center}
+  .hero-buttons .btn{width:100%;justify-content:center}
+}
+/* ── Scrollbar ── */
+::-webkit-scrollbar{width:8px}
+::-webkit-scrollbar-track{background:var(--bg-deep)}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:4px}
+::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,0.18)}
+/* ── Selection ── */
+::selection{background:rgba(6,182,212,0.25);color:#fff}
+</style>
+</head>
+<body>
+
+<div class="grid-bg"></div>
+
+<!-- ─── Navbar ─── -->
+<nav class="navbar" id="navbar">
+  <div class="container">
+    <a href="#" class="nav-logo">Usf-Edge</a>
+    <div class="nav-links">
+      <a href="#features">Features</a>
+      <a href="#guide">Guide</a>
+      <a href="#deploy">Deploy</a>
+      <a href="https://github.com/godde3s/usf-edge" target="_blank" rel="noopener" class="nav-gh">
+        <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+        GitHub
+      </a>
+    </div>
+    <button class="mobile-toggle" id="menuOpen" aria-label="Open menu">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
+  </div>
+</nav>
+
+<!-- ─── Mobile Menu ─── -->
+<div class="mobile-menu" id="mobileMenu">
+  <button class="mobile-close" id="menuClose" aria-label="Close menu">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+  </button>
+  <a href="#features" onclick="closeMobile()">Features</a>
+  <a href="#guide" onclick="closeMobile()">Guide</a>
+  <a href="#deploy" onclick="closeMobile()">Deploy</a>
+  <a href="https://github.com/godde3s/usf-edge" target="_blank" rel="noopener">GitHub</a>
+</div>
+
+<!-- ─── Hero ─── -->
+<section class="hero">
+  <div class="hero-content">
+    <div class="hero-badge"><span class="dot"></span> Open Source &bull; Cloudflare Workers</div>
+    <h1>Usf-Edge</h1>
+    <p class="tagline">Next-Generation Edge Proxy Management Panel</p>
+    <p class="description">
+      A powerful, self-hosted proxy management panel running entirely on Cloudflare Workers.
+      Manage users with volume and time limits, track real-time traffic, and deliver
+      beautiful subscription pages — all from the edge, with zero servers.
+    </p>
+    <div class="hero-buttons">
+      <a href="#deploy" class="btn btn-primary">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+        Get Started
+      </a>
+      <a href="https://github.com/godde3s/usf-edge" target="_blank" rel="noopener" class="btn btn-secondary">
+        <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+        View on GitHub
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ─── Features ─── -->
+<section id="features">
+  <div class="container text-center">
+    <div class="section-label">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+      Features
+    </div>
+    <h2 class="section-title">Everything You Need</h2>
+    <p class="section-subtitle">Built for performance and simplicity. Deploy in seconds, manage with ease.</p>
+    <div class="features-grid">
+      <!-- Card 1 -->
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        </div>
+        <h3>Multi-User Management</h3>
+        <p>Create and manage users with granular volume limits, time-based expiration, and concurrent connection caps. Full control from a clean admin dashboard.</p>
+      </div>
+      <!-- Card 2 -->
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+        </div>
+        <h3>Beautiful Subscription Pages</h3>
+        <p>Polished user pages with volume usage bars, QR codes for instant client setup, step-by-step client guides, and one-click config copying.</p>
+      </div>
+      <!-- Card 3 -->
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        </div>
+        <h3>Smart Traffic Accounting</h3>
+        <p>Real-time upload and download tracking per user with D1-powered persistence. Know exactly how much data each user has consumed at any moment.</p>
+      </div>
+      <!-- Card 4 -->
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/><line x1="1" y1="1" x2="23" y2="23" stroke-width="2"/></svg>
+        </div>
+        <h3>Stealth Mode</h3>
+        <p>Disguises itself as a default nginx page to casual visitors. The admin panel is hidden behind a secret path, keeping your setup low-profile and secure.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── Token Guide ─── -->
+<section id="guide" style="background:rgba(0,0,0,0.15)">
+  <div class="container text-center">
+    <div class="section-label">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      Getting Started
+    </div>
+    <h2 class="section-title">Prepare Your API Token</h2>
+    <p class="section-subtitle">Follow these steps to generate a Cloudflare API token with the required permissions.</p>
+    <div class="steps-container">
+      <!-- Step 1 -->
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-body">
+          <h3>Create a Cloudflare Account</h3>
+          <p>If you don't already have one, sign up for a free Cloudflare account. Workers and D1 are included in the free tier.</p>
+          <p style="margin-top:8px"><a href="https://dash.cloudflare.com/sign-up" target="_blank" rel="noopener">dash.cloudflare.com/sign-up &rarr;</a></p>
+        </div>
+      </div>
+      <!-- Step 2 -->
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-body">
+          <h3>Get Your API Token</h3>
+          <p>Generate a token with the exact permissions needed for deployment:</p>
+          <ul>
+            <li>Go to <a href="https://dash.cloudflare.com/profile/api-tokens" target="_blank" rel="noopener">Cloudflare Dashboard &rarr; My Profile &rarr; API Tokens</a></li>
+            <li>Click <strong>"Create Token"</strong></li>
+            <li>Use the <strong>"Edit Cloudflare Workers"</strong> template</li>
+            <li>Verify the token includes these permissions:</li>
+            <li style="padding-left:36px"><code>Account &gt; Workers Scripts &gt; Edit</code></li>
+            <li style="padding-left:36px"><code>Account &gt; D1 &gt; Edit</code></li>
+            <li style="padding-left:36px"><code>Account &gt; Workers KV Storage &gt; Edit</code></li>
+            <li>Click <strong>"Continue to summary"</strong> then <strong>"Create Token"</strong></li>
+            <li><strong>Copy the token</strong> — you'll paste it in the deploy tool below</li>
+          </ul>
+        </div>
+      </div>
+      <!-- Step 3 -->
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-body">
+          <h3>Deploy Using the Tool Below</h3>
+          <p>Scroll down to the One-Click Deploy section, paste your token, and hit Deploy. Everything else is handled automatically.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── Deploy Tool ─── -->
+<section id="deploy">
+  <div class="container text-center">
+    <div class="section-label">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+      Deploy
+    </div>
+    <h2 class="section-title">One-Click Deploy</h2>
+    <p class="section-subtitle">Paste your API token and deploy Usf-Edge to Cloudflare Workers in under 30 seconds.</p>
+    <div class="deploy-card" id="deployCard">
+      <h3>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        Deploy to Cloudflare
+      </h3>
+      <p class="deploy-subtitle">Your token is sent directly to the Cloudflare API. Nothing is stored or proxied.</p>
+
+      <div class="form-group">
+        <label for="apiToken">Cloudflare API Token</label>
+        <div class="input-wrap has-toggle">
+          <input type="password" id="apiToken" placeholder="Paste your API token here" autocomplete="off">
+          <button class="toggle-vis" id="toggleToken" type="button" aria-label="Toggle token visibility">
+            <svg id="eyeOpen" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            <svg id="eyeClosed" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="workerName">Worker Name</label>
+        <div class="input-wrap">
+          <input type="text" id="workerName" placeholder="usf-edge-xxxx">
+        </div>
+      </div>
+
+      <button class="btn-deploy" id="deployBtn" onclick="startDeploy()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+        Deploy
+      </button>
+
+      <!-- Progress -->
+      <div class="progress-area" id="progressArea"></div>
+
+      <!-- Success -->
+      <div class="success-card" id="successCard">
+        <div class="success-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <h4>Deployment Successful!</h4>
+        <p>Your Usf-Edge panel is live and ready to use.</p>
+        <div class="success-details" id="successDetails"></div>
+        <div class="success-warning">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          Save this password now! You won't be able to see it again.
+        </div>
+        <a class="btn-panel" id="goToPanel" href="#" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          Go to Panel
+        </a>
+      </div>
+
+      <!-- Error -->
+      <div class="error-card" id="errorCard">
+        <h4>Deployment Failed</h4>
+        <p id="errorMsg"></p>
+        <button class="btn-retry" onclick="startDeploy()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+          Retry
+        </button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── Footer ─── -->
+<footer class="footer">
+  <div class="container">
+    <p style="font-weight:700;font-size:1rem;margin-bottom:10px;background:linear-gradient(135deg,var(--cyan),var(--purple-light));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">Usf-Edge</p>
+    <p>Powered by <a href="https://workers.cloudflare.com" target="_blank" rel="noopener">Cloudflare Workers</a> &bull; Open Source</p>
+    <p style="margin-top:10px"><a href="https://github.com/godde3s/usf-edge" target="_blank" rel="noopener">GitHub</a></p>
+  </div>
+</footer>
+
+<script>
+/* ── Navbar scroll ── */
+window.addEventListener('scroll',()=>{document.getElementById('navbar').classList.toggle('scrolled',window.scrollY>40)});
+
+/* ── Mobile menu ── */
+document.getElementById('menuOpen').addEventListener('click',()=>{document.getElementById('mobileMenu').classList.add('open')});
+document.getElementById('menuClose').addEventListener('click',closeMobile);
+function closeMobile(){document.getElementById('mobileMenu').classList.remove('open')}
+
+/* ── Toggle token visibility ── */
+document.getElementById('toggleToken').addEventListener('click',function(){
+  const inp=document.getElementById('apiToken');
+  const show=inp.type==='password';
+  inp.type=show?'text':'password';
+  document.getElementById('eyeOpen').style.display=show?'none':'block';
+  document.getElementById('eyeClosed').style.display=show?'block':'none';
+});
+
+/* ── Random worker name ── */
+(function(){
+  const c='abcdefghijklmnopqrstuvwxyz0123456789';
+  let r='';for(let i=0;i<4;i++)r+=c[Math.floor(Math.random()*c.length)];
+  document.getElementById('workerName').value='usf-edge-'+r;
+})();
+
+/* ── Copy helper ── */
+function copyText(text,btn){
+  navigator.clipboard.writeText(text).then(()=>{
+    const orig=btn.textContent;btn.textContent='Copied!';
+    setTimeout(()=>{btn.textContent=orig},1500);
+  }).catch(()=>{});
+}
+
+/* ── Toggle password in success ── */
+function toggleSuccessPass(){
+  const el=document.getElementById('successPass');
+  const btn=document.getElementById('togglePassBtn');
+  if(el.dataset.masked==='true'){
+    el.textContent=el.dataset.val;el.dataset.masked='false';
+    btn.textContent='Hide';
+  }else{
+    el.textContent='••••••••••••••••';el.dataset.masked='true';
+    btn.textContent='Show';
+  }
+}
+
+/* ── Deploy Logic ── */
+const CF_API='https://api.cloudflare.com/client/v4';
+const SCRIPT_URL='https://raw.githubusercontent.com/godde3s/usf-edge/main/dist/index.js';
+const STEPS=[
+  'Connecting to Cloudflare API...',
+  'Creating D1 database...',
+  'Creating KV namespace...',
+  'Generating admin credentials...',
+  'Fetching worker script...',
+  'Uploading worker...',
+  'Initializing database schema...'
+];
+const TOTAL=STEPS.length;
+
+function setProgress(step,status,err){
+  const area=document.getElementById('progressArea');
+  if(step===0&&!area.classList.contains('active')){area.innerHTML='';area.classList.add('active')}
+  let html='';
+  for(let i=0;i<TOTAL;i++){
+    let cls='';let icon='';
+    if(i<step){cls='done';icon='✓'}
+    else if(i===step){
+      if(status==='active'){cls='active';icon='<span class="spinner" style="display:inline-block">⟳</span>'}
+      else if(status==='done'){cls='done';icon='✓'}
+      else if(status==='error'){cls='error';icon='✕'}
+    }
+    html+=`<div class="progress-step ${cls}">
+      <div class="step-icon">${icon||i+1}</div>
+      <div class="step-text">${STEPS[i]}${i===step&&err?`<div class="step-err">${err}</div>`:''}</div>
+    </div>`;
+  }
+  area.innerHTML=html;
+}
+
+function resetUI(){
+  document.getElementById('progressArea').classList.remove('active');
+  document.getElementById('progressArea').innerHTML='';
+  document.getElementById('successCard').classList.remove('active');
+  document.getElementById('errorCard').classList.remove('active');
+}
+
+function showSuccess(data){
+  const d=document.getElementById('successDetails');
+  d.innerHTML=`
+    <div class="success-row">
+      <span class="label">Admin Panel</span>
+      <a class="value" href="${data.panelUrl}" target="_blank" rel="noopener">${data.panelUrl}</a>
+    </div>
+    <div class="success-row">
+      <span class="label">Admin Password</span>
+      <span class="value" id="successPass" data-val="${data.adminPass}" data-masked="true" style="letter-spacing:2px">••••••••••••••••</span>
+      <div style="display:flex;gap:6px;flex-shrink:0">
+        <button class="copy-btn" onclick="toggleSuccessPass()" id="togglePassBtn">Show</button>
+        <button class="copy-btn" onclick="copyText('${data.adminPass.replace(/'/g,"\\'")}',this)">Copy</button>
+      </div>
+    </div>
+    <div class="success-row">
+      <span class="label">Worker Name</span>
+      <span class="value">${data.workerName}</span>
+    </div>`;
+  document.getElementById('goToPanel').href=data.panelUrl;
+  document.getElementById('successCard').classList.add('active');
+}
+
+function showError(msg){
+  document.getElementById('errorMsg').textContent=msg;
+  document.getElementById('errorCard').classList.add('active');
+}
+
+async function startDeploy(){
+  const token=document.getElementById('apiToken').value.trim();
+  const workerName=document.getElementById('workerName').value.trim();
+  if(!token){showError('Please enter your Cloudflare API token.');return}
+  if(!workerName){showError('Please enter a worker name.');return}
+  if(!/^[a-zA-Z][a-zA-Z0-9-]*$/.test(workerName)){showError('Worker name must start with a letter and contain only letters, numbers, and hyphens.');return}
+
+  const btn=document.getElementById('deployBtn');
+  btn.disabled=true;
+  btn.innerHTML='<span class="spinner" style="display:inline-block"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg></span> Deploying...';
+  resetUI();
+
+  let accountId,databaseId,kvId,adminPassword,subdomain;
+
+  try{
+    /* Step 1: Get Account ID */
+    setProgress(0,'active');
+    const accRes=await fetch(CF_API+'/accounts',{headers:{'Authorization':'Bearer '+token}});
+    const accData=await accRes.json();
+    if(!accData.success) throw new Error(accData.errors?.[0]?.message||'Failed to fetch account');
+    if(!accData.result||!accData.result.length) throw new Error('No Cloudflare accounts found');
+    accountId=accData.result[0].id;
+    subdomain=accData.result[0].name;
+    setProgress(0,'done');
+
+    /* Step 2: Create D1 */
+    setProgress(1,'active');
+    const d1Res=await fetch(CF_API+'/accounts/'+accountId+'/d1/database',{
+      method:'POST',headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'},
+      body:JSON.stringify({name:workerName+'-db'})
+    });
+    const d1Data=await d1Res.json();
+    if(!d1Data.success) throw new Error(d1Data.errors?.[0]?.message||'Failed to create D1 database');
+    databaseId=d1Data.result.uuid;
+    setProgress(1,'done');
+
+    /* Step 3: Create KV */
+    setProgress(2,'active');
+    const kvRes=await fetch(CF_API+'/accounts/'+accountId+'/storage/kv/namespaces',{
+      method:'POST',headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'},
+      body:JSON.stringify({title:workerName+'-kv'})
+    });
+    const kvData=await kvRes.json();
+    if(!kvData.success) throw new Error(kvData.errors?.[0]?.message||'Failed to create KV namespace');
+    kvId=kvData.result.id;
+    setProgress(2,'done');
+
+    /* Step 4: Generate password */
+    setProgress(3,'active');
+    const chars='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%&*';
+    adminPassword='';for(let i=0;i<16;i++)adminPassword+=chars[Math.floor(Math.random()*chars.length)];
+    setProgress(3,'done');
+
+    /* Step 5: Fetch worker script */
+    setProgress(4,'active');
+    const scriptRes=await fetch(SCRIPT_URL);
+    if(!scriptRes.ok) throw new Error('Failed to fetch worker script from GitHub (status '+scriptRes.status+')');
+    const workerScript=await scriptRes.text();
+    setProgress(4,'done');
+
+    /* Step 6: Upload worker */
+    setProgress(5,'active');
+    const metadata={
+      main_module:'index.js',
+      bindings:[
+        {type:'d1',name:'DB',id:databaseId},
+        {type:'kv_namespace',name:'KV',namespace_id:kvId},
+        {type:'plain_text',name:'ADMIN_PASS',text:adminPassword}
+      ]
+    };
+    const formData=new FormData();
+    const metadataBlob=new Blob([JSON.stringify(metadata)],{type:'application/json'});
+    formData.append('metadata',metadataBlob,'metadata.json');
+    const scriptBlob=new Blob([workerScript],{type:'application/javascript+module'});
+    formData.append('index.js',scriptBlob,'index.js');
+
+    const uploadRes=await fetch(CF_API+'/accounts/'+accountId+'/workers/scripts/'+workerName,{
+      method:'PUT',headers:{'Authorization':'Bearer '+token},
+      body:formData
+    });
+    if(!uploadRes.ok){
+      const errText=await uploadRes.text();
+      let errMsg='Failed to upload worker';
+      try{const errJson=JSON.parse(errText);errMsg=errJson.errors?.[0]?.message||errMsg}catch(e){}
+      throw new Error(errMsg);
+    }
+    setProgress(5,'done');
+
+    /* Step 7: Init schema */
+    setProgress(6,'active');
+    const sql=`
+CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT, uuid TEXT UNIQUE NOT NULL, username TEXT UNIQUE NOT NULL, password TEXT NOT NULL, volume_limit REAL DEFAULT 0, volume_used REAL DEFAULT 0, expire_date TEXT, connection_limit INTEGER DEFAULT 0, enabled INTEGER DEFAULT 1, note TEXT DEFAULT '', created_at TEXT DEFAULT (datetime('now')), updated_at TEXT DEFAULT (datetime('now')));
+CREATE TABLE IF NOT EXISTS traffic_logs (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE, upload REAL DEFAULT 0, download REAL DEFAULT 0, created_at TEXT DEFAULT (datetime('now')));
+CREATE TABLE IF NOT EXISTS active_connections (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE, ip_address TEXT, connected_at TEXT DEFAULT (datetime('now')), user_agent TEXT);
+CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value TEXT NOT NULL);
+INSERT OR IGNORE INTO settings (key, value) VALUES ('protocol', 'vless'), ('transport', 'ws'), ('path', '/'), ('host', ''), ('fingerprint', 'chrome'), ('sub_name', 'Usf-Edge'), ('fake_page_url', ''), ('admin_path', 'usf-admin'), ('sub_path', 's');`;
+    const schemaRes=await fetch(CF_API+'/accounts/'+accountId+'/d1/database/'+databaseId+'/query',{
+      method:'POST',headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'},
+      body:JSON.stringify({sql})
+    });
+    if(!schemaRes.ok){
+      const errText=await schemaRes.text();
+      let errMsg='Failed to initialize database schema';
+      try{const errJson=JSON.parse(errText);errMsg=errJson.errors?.[0]?.message||errMsg}catch(e){}
+      throw new Error(errMsg);
+    }
+    const schemaData=await schemaRes.json();
+    if(!schemaData.success) throw new Error(schemaData.errors?.[0]?.message||'Failed to initialize database schema');
+    setProgress(6,'done');
+
+    /* Success! */
+    const panelUrl='https://'+workerName+'.'+subdomain+'.workers.dev/usf-admin';
+    showSuccess({panelUrl,adminPassword,workerName});
+
+  }catch(err){
+    /* Find which step failed */
+    const progressArea=document.getElementById('progressArea');
+    const steps=progressArea.querySelectorAll('.progress-step');
+    let failedIdx=0;
+    steps.forEach((s,i)=>{if(s.classList.contains('active'))failedIdx=i});
+    setProgress(failedIdx,'error',err.message);
+    showError('Step '+(failedIdx+1)+'/'+TOTAL+' failed: '+err.message);
+  }
+
+  btn.disabled=false;
+  btn.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg> Deploy';
+}
+</script>
+</body>
+</html>

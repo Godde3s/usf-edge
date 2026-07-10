@@ -1,0 +1,12 @@
+node_modules/
+dist/
+.wrangler/
+src/html/admin-raw.html
+src/html/user-page.html
+src/test.ts
+src/proxy.ts
+convert-html.js
+public/
+*.log
+.env
+.dev.vars
