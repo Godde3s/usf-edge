@@ -12,7 +12,7 @@ export async function getAllSettings(db: D1Database): Promise<Settings> {
     settings[row.key] = row.value;
   }
   return {
-    protocol: settings.protocol || 'vless',
+    protocol: settings.protocol || 'vlx',
     transport: settings.transport || 'ws',
     path: settings.path || '/',
     host: settings.host || '',

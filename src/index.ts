@@ -4,7 +4,6 @@ import { getFakePageHTML } from './html/fake';
 import { handleAdminAPI } from './admin-api';
 import { handleSubscriptionPage, handleSubscriptionData } from './sub';
 import { getSetting } from './db';
-import { handleTunnel } from './tunnel';
 
 export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
@@ -21,11 +20,6 @@ export default {
       } catch (e) {}
 
       const pathname = url.pathname;
-
-      // WebSocket tunneling
-      if (request.headers.get('Upgrade') === 'websocket') {
-        return handleTunnel(request, env);
-      }
 
       // Admin panel
       if (pathname === `/${adminPath}` || pathname === `/${adminPath}/`) {

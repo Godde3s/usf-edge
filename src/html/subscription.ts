@@ -417,7 +417,7 @@ body{
       <!-- Windows -->
       <div class="howto-panel active" id="htab-windows">
         <div class="app-grid">
-          <div class="app-card"><div class="app-name">v2rayN</div><div class="app-desc">Popular Windows client with a clean GUI. Supports V2Ray, Trojan, and SS protocols.</div></div>
+          <div class="app-card"><div class="app-name">v2rayN</div><div class="app-desc">Popular Windows client with a clean GUI. Supports V2Ray, TRJ, and SS protocols.</div></div>
           <div class="app-card"><div class="app-name">Clash Verge Rev</div><div class="app-desc">Modern Clash GUI client based on Tauri. Fast, lightweight with rule management.</div></div>
           <div class="app-card"><div class="app-name">Nekoray</div><div class="app-desc">Versatile Qt-based client supporting Sing-box core with advanced routing features.</div></div>
         </div>
@@ -432,7 +432,7 @@ body{
       <!-- Android -->
       <div class="howto-panel" id="htab-android">
         <div class="app-grid">
-          <div class="app-card"><div class="app-name">v2rayNG</div><div class="app-desc">The most popular Android proxy client. Open source, lightweight, feature-rich.</div></div>
+          <div class="app-card"><div class="app-name">v2rayNG</div><div class="app-desc">The most popular Android network client. Open source, lightweight, feature-rich.</div></div>
           <div class="app-card"><div class="app-name">Clash Meta for Android</div><div class="app-desc">Powerful Clash-based client with rule-based routing and a modern interface.</div></div>
           <div class="app-card"><div class="app-name">NekoBox</div><div class="app-desc">Sing-box based client with advanced features like tun mode and routing rules.</div></div>
         </div>
@@ -440,14 +440,14 @@ body{
           <div class="step"><div class="step-text"><strong>Download</strong> and install one of the recommended apps from a trusted source.</div></div>
           <div class="step"><div class="step-text"><strong>Copy</strong> the subscription link from the "Subscription Links" section above.</div></div>
           <div class="step"><div class="step-text"><strong>Open</strong> the app, tap the profile/subscriptions tab, and <strong>add</strong> a new subscription URL.</div></div>
-          <div class="step"><div class="step-text"><strong>Update</strong> the subscription, select a node, and tap <strong>connect</strong> (start the VPN service).</div></div>
+          <div class="step"><div class="step-text"><strong>Update</strong> the subscription, select a node, and tap <strong>connect</strong> (start the network service).</div></div>
         </div>
       </div>
 
       <!-- iOS -->
       <div class="howto-panel" id="htab-ios">
         <div class="app-grid">
-          <div class="app-card"><div class="app-name">Shadowrocket</div><div class="app-desc">Premium iOS proxy client. Fast, reliable, supports multiple protocols via App Store (region-dependent).</div></div>
+          <div class="app-card"><div class="app-name">Shadowrocket</div><div class="app-desc">Premium iOS network client. Fast, reliable, supports multiple protocols via App Store (region-dependent).</div></div>
           <div class="app-card"><div class="app-name">Stash</div><div class="app-desc">Advanced Clash-based client for iOS with rule management and script support.</div></div>
           <div class="app-card"><div class="app-name">V2Box</div><div class="app-desc">Free, open-source iOS client supporting V2Ray and Sing-box protocols.</div></div>
         </div>
@@ -455,14 +455,14 @@ body{
           <div class="step"><div class="step-text"><strong>Download</strong> and install one of the recommended apps from the App Store.</div></div>
           <div class="step"><div class="step-text"><strong>Copy</strong> the subscription link from the "Subscription Links" section above.</div></div>
           <div class="step"><div class="step-text"><strong>Open</strong> the app, go to the subscription/add server screen, and <strong>paste</strong> the link.</div></div>
-          <div class="step"><div class="step-text"><strong>Fetch</strong> the subscription, pick a node, and <strong>connect</strong>. Allow the VPN configuration when prompted.</div></div>
+          <div class="step"><div class="step-text"><strong>Fetch</strong> the subscription, pick a node, and <strong>connect</strong>. Allow the network configuration when prompted.</div></div>
         </div>
       </div>
 
       <!-- macOS -->
       <div class="howto-panel" id="htab-macos">
         <div class="app-grid">
-          <div class="app-card"><div class="app-name">Clash Verge Rev</div><div class="app-desc">Cross-platform Clash GUI. Works beautifully on macOS with system proxy and tun mode.</div></div>
+          <div class="app-card"><div class="app-name">Clash Verge Rev</div><div class="app-desc">Cross-platform Clash GUI. Works beautifully on macOS with system network and tun mode.</div></div>
           <div class="app-card"><div class="app-name">V2rayU</div><div class="app-desc">Lightweight macOS client with menu bar integration. Easy to use with PAC mode.</div></div>
           <div class="app-card"><div class="app-name">Nekoray</div><div class="app-desc">Feature-rich Qt client supporting Sing-box core with advanced features on macOS.</div></div>
         </div>
@@ -470,7 +470,7 @@ body{
           <div class="step"><div class="step-text"><strong>Download</strong> and install one of the recommended apps above.</div></div>
           <div class="step"><div class="step-text"><strong>Copy</strong> the subscription link from the "Subscription Links" section above.</div></div>
           <div class="step"><div class="step-text"><strong>Open</strong> the app, navigate to subscription settings, and <strong>add</strong> the subscription URL.</div></div>
-          <div class="step"><div class="step-text"><strong>Update</strong> the subscription, select a server, and <strong>connect</strong>. Grant system proxy permissions if asked.</div></div>
+          <div class="step"><div class="step-text"><strong>Update</strong> the subscription, select a server, and <strong>connect</strong>. Grant system network permissions if asked.</div></div>
         </div>
       </div>
 
@@ -485,7 +485,7 @@ body{
           <div class="step"><div class="step-text"><strong>Download</strong> and install one of the recommended apps for your distro.</div></div>
           <div class="step"><div class="step-text"><strong>Copy</strong> the subscription link from the "Subscription Links" section above.</div></div>
           <div class="step"><div class="step-text"><strong>Open</strong> the app, go to subscription settings, and <strong>add</strong> the URL.</div></div>
-          <div class="step"><div class="step-text"><strong>Update</strong> the subscription, select a node, and <strong>connect</strong>. Configure system proxy if needed.</div></div>
+          <div class="step"><div class="step-text"><strong>Update</strong> the subscription, select a node, and <strong>connect</strong>. Configure system network if needed.</div></div>
         </div>
       </div>
     </div>

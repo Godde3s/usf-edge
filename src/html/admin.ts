@@ -294,7 +294,7 @@ tbody tr:hover{background:rgba(148,163,184,0.04)}
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-header">
       <div class="sidebar-logo">UE</div>
-      <div class="sidebar-brand">Usf-Edge<span>Proxy Management</span></div>
+      <div class="sidebar-brand">Usf-Edge<span>Panel Management</span></div>
     </div>
     <nav class="sidebar-nav">
       <div class="nav-section">
@@ -412,7 +412,7 @@ tbody tr:hover{background:rgba(148,163,184,0.04)}
         <div class="settings-grid">
           <div class="form-row">
             <label>Protocol</label>
-            <select id="setProtocol"><option value="vless">VLESS</option><option value="trojan">Trojan</option></select>
+            <select id="setProtocol"><option value="vlx">VLX</option><option value="trj">TRJ</option></select>
           </div>
           <div class="form-row">
             <label>Transport</label>
@@ -970,7 +970,7 @@ async function copySubLink(uuid) {
 async function loadSettings() {
   try {
     var s = await api('/settings');
-    document.getElementById('setProtocol').value = s.protocol || 'vless';
+    document.getElementById('setProtocol').value = s.protocol || 'vlx';
     document.getElementById('setTransport').value = s.transport || 'ws';
     document.getElementById('setPath').value = s.path || '/';
     document.getElementById('setHost').value = s.host || location.hostname;
