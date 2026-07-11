@@ -1,7 +1,7 @@
 {
   "name": "usf-edge",
   "main": "_worker.js",
-  "compatibility_date": "2024-12-01",
+  "compatibility_date": "2025-11-04",
   "d1_databases": [
     {
       "binding": "DB",
@@ -14,8 +14,5 @@
       "binding": "KV",
       "id": "27e0c1f745f4495cb156b346c41e5a92"
     }
-  ],
-  "vars": {
-    "ADMIN": "usf_admin_2024"
-  }
+  ]
 }
