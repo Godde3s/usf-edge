@@ -6,16 +6,16 @@
     {
       "binding": "DB",
       "database_name": "usf-edge-db",
-      "database_id": "a9c99aed-40f8-4cb1-b137-ed2286cbabd2"
+      "database_id": "6890f0bb-ead2-40a4-af9b-49d801bc3580"
     }
   ],
   "kv_namespaces": [
     {
       "binding": "KV",
-      "id": "4f19eb40dd8c45cca824b2ea5eaa8fbe"
+      "id": "27e0c1f745f4495cb156b346c41e5a92"
     }
   ],
   "vars": {
-    "ADMIN_PASS": "usf_admin_2024"
+    "ADMIN": "usf_admin_2024"
   }
 }

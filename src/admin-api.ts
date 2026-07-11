@@ -80,7 +80,7 @@ async function handleLogin(request: Request, env: Env): Promise<Response> {
 
     if (body.password === adminPass) {
       const token = hashPassword(adminPass);
-      const adminPath = await dbOps.getSetting(env.DB, 'admin_path') || 'usf-admin';
+      const adminPath = await dbOps.getSetting(env.DB, 'admin_path') || 'login';
       return jsonResponse({ token, admin_path: adminPath }, 200);
     }
     return jsonResponse({ error: 'Invalid password' }, 401);

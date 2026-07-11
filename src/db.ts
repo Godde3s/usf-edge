@@ -19,7 +19,7 @@ export async function getAllSettings(db: D1Database): Promise<Settings> {
     fingerprint: settings.fingerprint || 'chrome',
     sub_name: settings.sub_name || 'Usf-Edge',
     fake_page_url: settings.fake_page_url || '',
-    admin_path: settings.admin_path || 'usf-admin',
+    admin_path: settings.admin_path || 'login',
     sub_path: settings.sub_path || 's',
   };
 }

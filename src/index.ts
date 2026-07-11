@@ -10,7 +10,7 @@ export default {
     try {
       const url = new URL(request.url);
 
-      let adminPath = 'usf-admin';
+      let adminPath = 'login';
       let subPath = 's';
       try {
         const ap = await getSetting(env.DB, 'admin_path');
@@ -23,7 +23,7 @@ export default {
 
       // Admin panel
       if (pathname === `/${adminPath}` || pathname === `/${adminPath}/`) {
-        const html = adminHTML.replace(/__ADMIN_API__/g, `/${adminPath}`);
+        const html = adminHTML.replace(/__ADMIN_API__/g, `/${adminPath}/api`);
         return new Response(html, {
           headers: { 'Content-Type': 'text/html; charset=utf-8' },
         });
